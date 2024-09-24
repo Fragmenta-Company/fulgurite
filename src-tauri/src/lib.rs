@@ -1,3 +1,5 @@
+use std::env;
+
 use serde_json::json;
 use sqlx::sqlite::{SqliteConnectOptions, SqlitePool};
 use tauri::{AppHandle, Manager};
@@ -24,8 +26,13 @@ fn get_fulgurite_version() -> &'static str {
 
 #[tauri::command]
 async fn list_known_repositories() -> Result<serde_json::Value, String> {
+    let sqlite_test_path = match env::var("SQLITE_PATH") {
+        Ok(path) => path,
+        Err(e) => return Err(e.to_string()),
+    };
+
     let options = SqliteConnectOptions::new()
-        .filename("/home/nickrmd/Documents/fulguritetest.db")
+        .filename(sqlite_test_path)
         .create_if_missing(true);
 
     let pool = match SqlitePool::connect_with(options).await {
